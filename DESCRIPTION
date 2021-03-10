@@ -1,0 +1,14 @@
+Package: packaging
+Title: Package Building Demonstration
+Version: 0.1.0
+Authors@R: 
+    person(given = "Sam",
+           family = "Colgan",
+           role = c("aut", "cre"),
+           email = "colgas@uw.edu")
+Description: This package demonstrates basic package-building for STAT 302 at UW.
+License: GPL (>= 3)
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
