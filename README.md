@@ -4,7 +4,7 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-\code{packaging} includes four functions whose uses are tied to statistical inference and statistical prediction. The package includes functions for conducting t-tests, producing linear regression models, finding the cross-validation misclassification error for k-nearest neighbors, and finding the cross-validation mean squared error for random forest models. This package also comes with the \code{palmerpenguins} and \code{gapminder} datasets.
+`packaging` includes four functions whose uses are tied to statistical inference and statistical prediction. The package includes functions for conducting t-tests, producing linear regression models, finding the cross-validation misclassification error for k-nearest neighbors, and finding the cross-validation mean squared error for random forest models. This package also comes with the `palmerpenguins` and `gapminder` datasets.
 
 ## Installation
 

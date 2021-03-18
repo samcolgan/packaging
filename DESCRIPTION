@@ -25,4 +25,5 @@ Imports:
     dplyr,
     randomForest,
     kableExtra,
-    tibble
+    tibble,
+    stringr

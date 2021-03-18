@@ -17,13 +17,13 @@ knitr::opts_chunk$set(
 
 ## Introduction
 
-The purpose of the \code{packaging} package is to join four common functions
+The purpose of the `packaging` package is to join four common functions
 used in statistical prediction and inference within a single package. These 
-functions are \code{my_t.test}, which conducts a simply hypothesis test; 
-\code{my_lm}, which produces a linear regression model; \code{my_knn_cv}, which
+functions are `my_t.test`, which conducts a simply hypothesis test; 
+`my_lm`, which produces a linear regression model; `my_knn_cv`, which
 finds the cross-validation misclassification error of a k-nearest neighbors 
-model; and \code{my_rf_cv}, which finds the cross-validation misclassification
-error of a random forest model for the \code{palmerpenguins} dataset.
+model; and `my_rf_cv`, which finds the cross-validation misclassification
+error of a random forest model for the `palmerpenguins` dataset.
 
 To install and access the function from GitHub, perform the following:
 
@@ -33,11 +33,15 @@ devtools::install_github("samcolgan/packaging")
 library(packaging)
 ```
 
-## Using \code{my_t.test}
+```{r setup}
+# Load packaging
+library(packaging)
+```
+## Using `my_t.test`
 
 To demonstrate the uses of the t-test function, it may be helpful to conduct a 
-few hypothesis tests with the \code{gapminder} dataset, which is included in
-this package as \code{my_gapminder}.
+few hypothesis tests with the `gapminder` dataset, which is included in
+this package as `my_gapminder`.
 
 ```{r}
 # Load packaging and tidyverse
@@ -67,15 +71,51 @@ my_t.test(my_gapminder$lifeExp, mu = 60, alternative = "greater")
 Using a p_value of 0.05, we cannot reject the null that the true average life 
 expectancy equals 60. We cannot rule in favor of the alternative that the true average life expectancy is greater than 60.
 
-## Using \code{my_lm}
+## Using `my_lm`
 
-## Using \code{my_knn_cv}
+To demonstrate the uses of the `my_lm` function, it may be helpful to conduct a
+linear regression with the `gapminder` dataset, which is included in this package as `my_gapminder`.
 
-To demonstrate the uses of the \code{my_knn_cv} function, it may be helpful to
+```{r}
+# Modeling lifeExp with gdpPercap and continent
+lifeExp_lm <- my_lm(lifeExp ~ gdpPercap + continent, my_gapminder)
+lifeExp_lm
+
+# Fitted values
+mod_fits <- fitted(lifeExp_lm)
+my_df <- data.frame("actual" = my_gapminder$lifeExp, "fitted" = mod_fits)
+
+# Actual vs. fitted values
+fitted_plot <- ggplot(my_df, 
+                      # Fitted on x-axis, actual on y-axis
+                      aes(x = fitted, y = actual)) +
+  # Scatterplot
+  geom_point() +
+  # 45-degree line
+  geom_abline(slope = 1, intercept = 0, col = "red", lty = 2) + 
+  # Font sizing
+  theme_bw(base_size = 15) +
+  # Axes
+  labs(x = "Fitted values", y = "Actual values", title = "Actual vs. Fitted") +
+  # Title size and spacing
+  theme(plot.title = element_text(hjust = 0.5))
+
+# Show plot
+fitted_plot
+```
+
+The `gdpPercap` coefficient reveals how much `lifeExp` increases for a one-value increase in `gdpPercap`. If the p_value for this coefficient is below
+0.05, then we should reject the null that gdpPercap has no effect on lifeExp and maintain the coefficient in our model.
+
+I am intentionally not commenting on the interpretation of the actual vs. fitted values plot because there is a structural flaw in the code for the `my_lm` function that inhibits this analysis
+
+## Using `my_knn_cv`
+
+To demonstrate the uses of the `my_knn_cv` function, it may be helpful to
 conduct a series of k-nearest neighbors classifications and record the
-cross-validation misclassification rates for \code{k_nn} equals 1 through 10
-neighbors. The example below uses the \code{palmerpenguins} dataset, which is
-included in this package as \code{my_penguins}. The goal is to compare the CV
+cross-validation misclassification rates for `k_nn` equals 1 through 10
+neighbors. The example below uses the `palmerpenguins` dataset, which is
+included in this package as `my_penguins`. The goal is to compare the CV
 misclassification rate (5 folds) with the training misclassification rate for
 each of the ten prediction sets.
 
@@ -120,9 +160,9 @@ error_table
 ```
 
 Based on the CV misclassification rate, I would choose the model with 
-\code{k_nn} = 1 nearest neighbor because this model produces the lowest CV 
+`k_nn` = 1 nearest neighbor because this model produces the lowest CV 
 error. Based on the training error, I would also choose the model with 
-\code{k_nn} = 1 nearest neighbor because this model produces the lowest 
+`k_nn` = 1 nearest neighbor because this model produces the lowest 
 training error. 
 
 In practice, it is better to choose the model based on CV error because 
@@ -136,15 +176,15 @@ test folds to find the cross-validation error. Thus, cross-validation does a
 good job of finding models that will be effective at predicting the class of
 new data.
 
-## Using \code{my_rf_cv}
+## Using `my_rf_cv`
 
-To demonstrate the uses of the \code{my_rf_cv} function, it may be helpful to
+To demonstrate the uses of the `my_rf_cv` function, it may be helpful to
 repeat a series of random forest predictions and record the average
-cross-validation misclassification rates for \code{k} equals 2, 5, and 10
+cross-validation misclassification rates for `k` equals 2, 5, and 10
 folds. The random forest function in this package has hardwired the
-\code{my_penguins} dataset, and will predict \code{body_mass_g} using
-covariates \code{bill_length_mm}, \code{bill_depth_mm}, and
-\code{flipper_length_mm}. The goal is to compare the CV misclassification rates
+`my_penguins` dataset, and will predict `body_mass_g` using
+covariates `bill_length_mm`, `bill_depth_mm`, and
+`flipper_length_mm`. The goal is to compare the CV misclassification rates
 for 2, 5, and 10 folds. 
 
 ```{r}
