@@ -1,0 +1,208 @@
+---
+title: "Project 3: packaging Tutorial"
+author: "Sam Colgan"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{packaging Tutorial}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Introduction
+
+The purpose of the \code{packaging} package is to join four common functions
+used in statistical prediction and inference within a single package. These 
+functions are \code{my_t.test}, which conducts a simply hypothesis test; 
+\code{my_lm}, which produces a linear regression model; \code{my_knn_cv}, which
+finds the cross-validation misclassification error of a k-nearest neighbors 
+model; and \code{my_rf_cv}, which finds the cross-validation misclassification
+error of a random forest model for the \code{palmerpenguins} dataset.
+
+To install and access the function from GitHub, perform the following:
+
+```{r, eval = FALSE}
+install.packages("devtools")
+devtools::install_github("samcolgan/packaging")
+library(packaging)
+```
+
+## Using \code{my_t.test}
+
+To demonstrate the uses of the t-test function, it may be helpful to conduct a 
+few hypothesis tests with the \code{gapminder} dataset, which is included in
+this package as \code{my_gapminder}.
+
+```{r}
+# Load packaging and tidyverse
+library(packaging)
+library(tidyverse)
+
+# Test if the true average life expectancy is not equal to 60.
+my_t.test(my_gapminder$lifeExp, mu = 60, alternative = "two.sided")
+
+```
+
+Using a p_value of 0.05, we cannot reject the null that the true average life expectancy equals 60. 
+
+```{r}
+# Test if the true average life expectancy is less than 60.
+my_t.test(my_gapminder$lifeExp, mu = 60, alternative = "less")
+```
+
+Using a p_value of 0.05, we can reject the null that the true average life 
+expectancy equals 60. We can rule in favor of the alternative that the true average life expectancy is less than 60.
+
+```{r}
+# Test if the true average life expectancy in this dataset is greater than 60.
+my_t.test(my_gapminder$lifeExp, mu = 60, alternative = "greater")
+```
+
+Using a p_value of 0.05, we cannot reject the null that the true average life 
+expectancy equals 60. We cannot rule in favor of the alternative that the true average life expectancy is greater than 60.
+
+## Using \code{my_lm}
+
+## Using \code{my_knn_cv}
+
+To demonstrate the uses of the \code{my_knn_cv} function, it may be helpful to
+conduct a series of k-nearest neighbors classifications and record the
+cross-validation misclassification rates for \code{k_nn} equals 1 through 10
+neighbors. The example below uses the \code{palmerpenguins} dataset, which is
+included in this package as \code{my_penguins}. The goal is to compare the CV
+misclassification rate (5 folds) with the training misclassification rate for
+each of the ten prediction sets.
+
+```{r}
+# Load class package
+library(class)
+
+# Remove missing observations
+my_penguins <- na.omit(my_penguins)
+
+# Training data
+penguin_train <- data.frame("bill_length_mm" = my_penguins$bill_length_mm,
+                            "bill_depth_mm" = my_penguins$bill_depth_mm,
+                            "flipper_length" = my_penguins$flipper_length_mm,
+                            "body_mass_g" = my_penguins$body_mass_g)
+
+# Penguin class information                   
+penguin_cl <- my_penguins$species
+
+# Create empty vector to store CV errors
+cv <- c(rep(NA, 10))
+
+# Create empty list with 10 objects to store class predictions for training 
+# error
+pred_class <- vector(mode = "list", length = 10)
+
+# Create empty vector to store training errors
+train <- c(rep(NA, 10))
+
+# Iterate from 1:10 to compare cv and training error
+for (i in 1:10) {
+  cv[i] <- my_knn_cv(penguin_train, penguin_cl, i, 5)$cv_err
+  pred_class[[i]] <- knn(penguin_train, penguin_train, penguin_cl, k = i)
+  train[i] <- mean(pred_class[[i]] != penguin_cl)
+}
+
+# Compare errors in table
+error_table <- tibble("CV error" = cv,
+                    "Train error" = train)
+
+error_table
+```
+
+Based on the CV misclassification rate, I would choose the model with 
+\code{k_nn} = 1 nearest neighbor because this model produces the lowest CV 
+error. Based on the training error, I would also choose the model with 
+\code{k_nn} = 1 nearest neighbor because this model produces the lowest 
+training error. 
+
+In practice, it is better to choose the model based on CV error because 
+cross-validation is determining the test error, which does a better job at 
+evaluating the predictive capacity of the model than training error. 
+Cross-validation amounts to the process of dividing the data into folds, 
+simulating new data by predicting the class values of one of the folds from the
+classes of the other folds, calculating the misclassification rate, repeating 
+the process for each fold, and averaging the misclassification rates across all
+test folds to find the cross-validation error. Thus, cross-validation does a 
+good job of finding models that will be effective at predicting the class of
+new data.
+
+## Using \code{my_rf_cv}
+
+To demonstrate the uses of the \code{my_rf_cv} function, it may be helpful to
+repeat a series of random forest predictions and record the average
+cross-validation misclassification rates for \code{k} equals 2, 5, and 10
+folds. The random forest function in this package has hardwired the
+\code{my_penguins} dataset, and will predict \code{body_mass_g} using
+covariates \code{bill_length_mm}, \code{bill_depth_mm}, and
+\code{flipper_length_mm}. The goal is to compare the CV misclassification rates
+for 2, 5, and 10 folds. 
+
+```{r}
+# Load randomForest package
+library(randomForest)
+library(kableExtra)
+
+# Create empty vectors to store CV MSE's
+cv2 <- c(rep(NA, 30))
+cv5 <- c(rep(NA, 30))
+cv10 <- c(rep(NA, 30))
+
+# CV estimated MSE errors for 2, 5, and 10 folds. Run each function 30 times.
+for (i in 1:30) {
+  cv2[i] <- my_rf_cv(2)
+  cv5[i] <- my_rf_cv(5)
+  cv10[i] <- my_rf_cv(10)
+}
+
+# Data frame of CV errors and fold number
+CVerr_data <- data.frame("cv_err" = c(cv2, cv5, cv10),
+                        "fold" = c(rep("02", 30), rep("05", 30), rep("10", 30)))
+
+# Create boxplot to compare CV error distributions
+CVerr_plot <- ggplot(CVerr_data,
+                    # Fold # on x-axis, cv_err on y-axis
+                    aes(x = fold, y = cv_err)) +
+  # Boxplot
+  geom_boxplot(fill = "violet") +
+  # Title and axes
+  labs(title = "CV errors by number of folds",
+       x = "# of folds", y = "CV error") +
+  # Font sizing
+  theme_bw(base_size = 16) +
+  # Title size and spacing
+  theme(plot.title = element_text(hjust = 0.5, size = 16)) 
+
+# Show plot
+CVerr_plot
+
+
+# Table of means and standard deviations
+CVerror_table <- data.frame("Mean" = c(mean(cv2), mean(cv5), mean(cv10)),
+                            "St_Dev" = c(sd(cv2), sd(cv5), sd(cv10)))
+
+# Add rownames
+row.names(CVerror_table) <- c("2_Folds", "5_Folds", "10_Folds") 
+
+# Format
+kable_styling(kable(CVerror_table))
+```
+
+The boxplot and the table demonstrate two consistent results, namely, that the
+mean and standard deviation of the CV error decrease as the number of folds
+increases. Albeit, the mean and standard deviation decrease at a diminishing
+rate. This is likely the case because as the number of folds increases, each
+fold will comprise a smaller share of the data. Thus, for each set of
+predictions, a greater percentage of the data will be used as training data
+while a smaller percentage of the data will be used as test data. The
+opportunity for error decreases and so the average cross-validation error will
+decrease as well. 

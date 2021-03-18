@@ -1,6 +1,3 @@
-test_that("multiplication works", {
-  expect_equal(2 * 2, 4)
-})
 # within test-f_to_c.R
 test_that("f_to_c works mathematically", {
   expect_equal(f_to_c(32), 0)
